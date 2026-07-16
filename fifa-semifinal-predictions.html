@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FIFA Semi-Final Predictions vs Reality</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --card: #121b2e;
+    --card-border: #1f2c46;
+    --text: #eef2f8;
+    --muted: #8fa0bd;
+    --accent: #ffd400;
+    --spain: #e04141;
+    --spain-light: #f28b8b;
+    --france: #3a6cf6;
+    --france-light: #8ba9fb;
+    --argentina: #5dc2e8;
+    --argentina-light: #a7e0f4;
+    --england: #d94f6a;
+    --england-light: #f0a3b3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 16px;
+    background: radial-gradient(circle at top, #142038, var(--bg) 60%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .header {
+    text-align: center;
+    max-width: 640px;
+  }
+
+  .header .eyebrow {
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .header h1 {
+    margin: 8px 0 4px;
+    font-size: 26px;
+    font-weight: 800;
+  }
+
+  .header p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .toggle-row {
+    display: flex;
+    gap: 8px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 4px;
+    border-radius: 999px;
+  }
+
+  .toggle-btn {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+
+  .toggle-btn.active {
+    background: var(--accent);
+    color: #16110a;
+  }
+
+  .cards {
+    width: 100%;
+    max-width: 640px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 16px;
+    padding: 22px 22px 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 18px;
+  }
+
+  .card-top .match {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .card-top .source {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .bar-block {
+    margin-bottom: 16px;
+  }
+
+  .bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .bar-label .pct {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .bar-track {
+    position: relative;
+    width: 100%;
+    height: 26px;
+    background: #0b1424;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+  }
+
+  .bar-fill {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 0%;
+    border-radius: 8px;
+    transition: width 1.1s cubic-bezier(.16,1,.3,1);
+  }
+
+  .winner-tag {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #16110a;
+    background: var(--accent);
+    padding: 2px 8px;
+    border-radius: 999px;
+    margin-left: 8px;
+  }
+
+  .winner-tag.show { display: inline-flex; }
+
+  .result-strip {
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #0b1424;
+    border: 1px dashed var(--card-border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 13px;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease, margin-top 0.4s ease;
+  }
+
+  .result-strip.show {
+    opacity: 1;
+    max-height: 60px;
+    margin-top: 12px;
+  }
+
+  .result-strip {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .result-strip .score {
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: 1px;
+  }
+
+  .footnote {
+    max-width: 640px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="eyebrow">World Cup &middot; Semi-Finals</div>
+    <h1>Prediction vs Reality</h1>
+    <p>Opta Analyst pre-match win probabilities, compared against what actually happened on the pitch.</p>
+  </div>
+
+  <div class="toggle-row">
+    <button class="toggle-btn active" data-mode="predict">Predictions Only</button>
+    <button class="toggle-btn" data-mode="result">Reveal Results</button>
+  </div>
+
+  <div class="cards">
+
+    <!-- Spain vs France -->
+    <div class="card">
+      <div class="card-top">
+        <div class="match">Spain vs France</div>
+        <div class="source">Source: Opta Analyst</div>
+      </div>
+
+      <div class="bar-block">
+        <div class="bar-label">
+          <span>Spain <span class="winner-tag" data-winner="spain">ACTUAL WINNER</span></span>
+          <span class="pct">29.7%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-target="29.7" style="background: linear-gradient(90deg, var(--spain), var(--spain-light));"></div>
+        </div>
+      </div>
+
+      <div class="bar-block" style="margin-bottom:0;">
+        <div class="bar-label">
+          <span>France</span>
+          <span class="pct">43.1%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-target="43.1" style="background: linear-gradient(90deg, var(--france), var(--france-light));"></div>
+        </div>
+      </div>
+
+      <div class="result-strip" data-match="sf1">
+        <div>Final score: <span class="score">Spain 2&ndash;0 France</span></div>
+      </div>
+    </div>
+
+    <!-- Argentina vs England -->
+    <div class="card">
+      <div class="card-top">
+        <div class="match">Argentina vs England</div>
+        <div class="source">Source: Opta Analyst</div>
+      </div>
+
+      <div class="bar-block">
+        <div class="bar-label">
+          <span>Argentina <span class="winner-tag" data-winner="argentina">ACTUAL WINNER</span></span>
+          <span class="pct">32.0%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-target="32.0" style="background: linear-gradient(90deg, var(--argentina), var(--argentina-light));"></div>
+        </div>
+      </div>
+
+      <div class="bar-block" style="margin-bottom:0;">
+        <div class="bar-label">
+          <span>England</span>
+          <span class="pct">37.3%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" data-target="37.3" style="background: linear-gradient(90deg, var(--england), var(--england-light));"></div>
+        </div>
+      </div>
+
+      <div class="result-strip" data-match="sf2">
+        <div>Final score: <span class="score">Argentina 2&ndash;1 England</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footnote">
+    Figures via Opta Analyst's pre-match supercomputer simulations, reflecting each side's chance of winning in 90 minutes. Spain vs France: draw probability was 27.2%. Argentina vs England: draw probability was 30.7% (both leading to extra time/penalties).
+  </div>
+
+<script>
+  const fills = document.querySelectorAll('.bar-fill');
+  function animateBars() {
+    fills.forEach(f => {
+      const target = f.getAttribute('data-target');
+      requestAnimationFrame(() => {
+        f.style.width = target + '%';
+      });
+    });
+  }
+  window.addEventListener('load', () => setTimeout(animateBars, 150));
+
+  const buttons = document.querySelectorAll('.toggle-btn');
+  const strips = document.querySelectorAll('.result-strip');
+  const winnerTags = document.querySelectorAll('.winner-tag');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const mode = btn.getAttribute('data-mode');
+      if (mode === 'result') {
+        strips.forEach(s => s.classList.add('show'));
+        winnerTags.forEach(w => w.classList.add('show'));
+      } else {
+        strips.forEach(s => s.classList.remove('show'));
+        winnerTags.forEach(w => w.classList.remove('show'));
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
